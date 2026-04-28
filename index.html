@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Galaxy Portal</title>
+    <style>
+        /* 🎨 الأساسيات */
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #000 50%, #b8860b 50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 🌌 خلفية الـ Canvas */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 💎 الحاوية المركزية */
+        .container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+            padding: 20px;
+        }
+
+        /* 🔁 الكرت المطور */
+        .card {
+            width: 100%;
+            max-width: 340px; /* عرض مثالي للموبايل */
+            height: 440px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: 0.8s cubic-bezier(.2, .8, .2, 1.2);
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+
+        /* 👑 واجهة النموذج (Glassmorphism) */
+        .form {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: gold;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backface-visibility: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,215,0,0.1);
+            padding: 30px;
+        }
+
+        /* ✨ العنوان المتوهج */
+        h2 {
+            font-size: 1.6rem;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px gold;
+            text-align: center;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            33% { transform: translate(-1px, 1px); }
+            66% { transform: translate(1px, -1px); }
+        }
+
+        /* ✍️ الحقول (متوافقة مع الموبايل) */
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            color: gold;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            font-size: 16px; /* يمنع الزووم في الآيفون */
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: gold;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+
+        /* 🔘 الزر */
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(45deg, gold, #b8860b);
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .link {
+            margin-top: 20px;
+            font-size: 13px;
+            opacity: 0.8;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .back { transform: rotateY(180deg); }
+
+        /* 📱 تعديلات الشاشات الصغيرة جداً */
+        @media (max-height: 550px) {
+            .card { height: 380px; }
+            h2 { font-size: 1.2rem; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="container">
+    <div class="card" id="card">
+        <div class="form">
+            <h2>AI LOGIN</h2>
+            <input type="email" placeholder="Email" id="l-email">
+            <input type="password" placeholder="Password" id="l-pass">
+            <button>ENTER SYSTEM</button>
+            <div class="link" onclick="flip()">Create Account</div>
+        </div>
+
+        <div class="form back">
+            <h2>ACCESS NODE</h2>
+            <input type="text" placeholder="Name" id="r-name">
+            <input type="email" placeholder="Email" id="r-email">
+            <input type="password" placeholder="Password" id="r-pass">
+            <button>JOIN NETWORK</button>
+            <div class="link" onclick="flip()">Back to Login</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 🔁 قلب الكارت
+    function flip() {
+        document.getElementById("card").classList.toggle("flip");
+    }
+
+    // 🌌 الأنيميشن (النجوم والكواكب المتوهجة)
+    const canvas = document.getElementById("bg");
+    const ctx = canvas.getContext("2d");
+
+    let stars = [];
+    let planets = [];
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    // إنشاء النجوم
+    for(let i=0; i<120; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            s: Math.random() * 1.8,
+            speed: Math.random() * 0.4 + 0.1
+        });
+    }
+
+    // إنشاء الكواكب
+    for(let i=0; i<5; i++) {
+        planets.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: 8 + Math.random() * 8,
+            dx: (Math.random() - 0.5) * 0.4,
+            dy: (Math.random() - 0.5) * 0.4
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // رسم النجوم
+        ctx.fillStyle = "white";
+        stars.forEach(s => {
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.s, 0, Math.PI * 2);
+            ctx.fill();
+            s.y += s.speed;
+            if(s.y > canvas.height) s.y = 0;
+        });
+
+        // رسم الكواكب المتوهجة الأصلية
+        planets.forEach(p => {
+            p.x += p.dx;
+            p.y += p.dy;
+            if(p.x < 0 || p.x > canvas.width) p.dx *= -1;
+            if(p.y < 0 || p.y > canvas.height) p.dy *= -1;
+
+            let isGoldSide = p.x > canvas.width / 2;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = isGoldSide ? "gold" : "transparent";
+            ctx.fillStyle = isGoldSide ? "rgba(255, 215, 0, 0.8)" : "rgba(255, 255, 255, 0.1)";
+            
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0; // ريسيت للظل عشان النجوم
+        });
+
+        requestAnimationFrame(draw);
+    }
+    draw();
+</script>
+
+</body>
+</html>
